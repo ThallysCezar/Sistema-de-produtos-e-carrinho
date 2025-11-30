@@ -21,7 +21,7 @@ export class Product implements OnInit, AfterViewInit {
   columnsToDisplay = ['name', 'price', 'stock'];
   columnsToDisplayWithExpand = [...this.columnsToDisplay, 'actions', 'expand'];
   expandedProduct: ProductModel | null = null;
-  
+
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   isCartOpen = false;
@@ -33,11 +33,14 @@ export class Product implements OnInit, AfterViewInit {
 
   isLoading = false;
   errorMessage = '';
-  
+
   showSuccessNotification = false;
   successMessage = '';
   orderId: number | undefined = undefined;
-  
+
+  showCrudNotification = false;
+  crudMessage = '';
+
   showErrorNotification = false;
   errorNotificationMessage = '';
   errorTitle = '';
@@ -60,17 +63,21 @@ export class Product implements OnInit, AfterViewInit {
       this.loadProducts();
     });
   }
-  
+
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
   }
 
   loadProducts() {
     this.errorMessage = '';
-    
+
     this.productService.getAllProducts().subscribe({
       next: (products) => {
         this.dataSource.data = products;
+        // Garantir que o paginator está sincronizado
+        if (this.paginator) {
+          this.dataSource.paginator = this.paginator;
+        }
         this.isLoading = false;
         this.cdr.detectChanges();
       },
@@ -96,7 +103,11 @@ export class Product implements OnInit, AfterViewInit {
   }
 
   addToCart(product: ProductModel) {
-    if (!product.stock || product.stock <= 0) {
+    // Buscar o produto atualizado do dataSource para ter o estoque real
+    const currentProduct = this.dataSource.data.find(p => p.id === product.id);
+    const availableStock = currentProduct ? currentProduct.stock : product.stock;
+
+    if (!availableStock || availableStock <= 0) {
       this.showError('Produto Indisponível', 'Este produto está sem estoque no momento.');
       return;
     }
@@ -104,14 +115,16 @@ export class Product implements OnInit, AfterViewInit {
     const existingItem = this.cartItems.find(item => item.product.id === product.id);
 
     if (existingItem) {
-      if (existingItem.quantity >= product.stock) {
-        this.showError('Estoque Insuficiente', `Apenas ${product.stock} unidades disponíveis. Você já tem essa quantidade no carrinho.`);
+      if (existingItem.quantity >= availableStock) {
+        this.showError('Estoque Insuficiente', `Apenas ${availableStock} unidades disponíveis. Você já tem essa quantidade no carrinho.`);
         return;
       }
       existingItem.quantity++;
+      // Atualizar referência do produto no carrinho com estoque atual
+      existingItem.product = currentProduct || product;
     } else {
       this.cartItems.push({
-        product: product,
+        product: currentProduct || product,
         quantity: 1
       });
     }
@@ -133,10 +146,14 @@ export class Product implements OnInit, AfterViewInit {
   }
 
   increaseQuantity(item: CartItem) {
-    if (item.quantity < item.product.stock) {
+    // Buscar o produto atualizado do dataSource para ter o estoque real
+    const currentProduct = this.dataSource.data.find(p => p.id === item.product.id);
+    const availableStock = currentProduct ? currentProduct.stock : item.product.stock;
+
+    if (item.quantity < availableStock) {
       item.quantity++;
     } else {
-      this.showError('Estoque Insuficiente', `Apenas ${item.product.stock} unidades disponíveis em estoque.`);
+      this.showError('Estoque Insuficiente', `Apenas ${availableStock} unidades disponíveis em estoque.`);
     }
   }
 
@@ -187,8 +204,14 @@ export class Product implements OnInit, AfterViewInit {
         next: (updatedProduct) => {
           const index = this.dataSource.data.findIndex(p => p.id === updatedProduct.id);
           if (index > -1) {
+            // Atualizar diretamente o item mantendo a posição
             this.dataSource.data[index] = updatedProduct;
-            this.dataSource.data = [...this.dataSource.data];
+            // Forçar atualização da tabela sem mudar ordem
+            this.dataSource._updateChangeSubscription();
+            // Garantir que o paginator está sincronizado
+            if (this.paginator) {
+              this.dataSource.paginator = this.paginator;
+            }
           }
           this.isLoading = false;
           this.closeProductModal();
@@ -202,8 +225,14 @@ export class Product implements OnInit, AfterViewInit {
     } else {
       this.productService.createProduct(formValue).subscribe({
         next: (newProduct) => {
-          this.dataSource.data.push(newProduct);
-          this.dataSource.data = [...this.dataSource.data];
+          // Adicionar no final da lista mantendo ordem
+          const currentData = this.dataSource.data;
+          currentData.push(newProduct);
+          this.dataSource.data = currentData;
+          // Garantir que o paginator está sincronizado
+          if (this.paginator) {
+            this.dataSource.paginator = this.paginator;
+          }
           this.isLoading = false;
           this.closeProductModal();
           this.showSuccess('Produto Criado', 'O produto foi criado com sucesso!');
@@ -221,13 +250,19 @@ export class Product implements OnInit, AfterViewInit {
 
     if (confirm(`Tem certeza que deseja deletar o produto "${product.name}"?`)) {
       this.isLoading = true;
-      
+
       this.productService.deleteProduct(product.id).subscribe({
         next: () => {
           const index = this.dataSource.data.findIndex(p => p.id === product.id);
           if (index > -1) {
-            this.dataSource.data.splice(index, 1);
-            this.dataSource.data = [...this.dataSource.data];
+            // Remover mantendo referência do array
+            const currentData = this.dataSource.data;
+            currentData.splice(index, 1);
+            this.dataSource.data = currentData;
+            // Garantir que o paginator está sincronizado
+            if (this.paginator) {
+              this.dataSource.paginator = this.paginator;
+            }
           }
           this.isLoading = false;
           this.showSuccess('Produto Deletado', `O produto "${product.name}" foi removido com sucesso!`);
@@ -269,15 +304,28 @@ export class Product implements OnInit, AfterViewInit {
 
     this.orderService.checkout(checkoutRequest).subscribe({
       next: (order) => {
+        // Atualizar estoque dos produtos afetados localmente
+        this.cartItems.forEach(cartItem => {
+          const productIndex = this.dataSource.data.findIndex(p => p.id === cartItem.product.id);
+          if (productIndex > -1) {
+            this.dataSource.data[productIndex].stock -= cartItem.quantity;
+          }
+        });
+        
+        // Forçar atualização da tabela mantendo ordem
+        this.dataSource._updateChangeSubscription();
+        // Garantir que o paginator está sincronizado
+        if (this.paginator) {
+          this.dataSource.paginator = this.paginator;
+        }
+        
         this.cartItems = [];
         this.isCartOpen = false;
         this.isLoading = false;
-        
+
         this.orderId = order.id;
         this.successMessage = `Pedido #${order.id} realizado com sucesso!\nTotal: R$ ${order.total.toFixed(2)}`;
         this.showSuccessNotification = true;
-        
-        this.loadProducts();
       },
       error: (error) => {
         this.isLoading = false;
@@ -286,37 +334,43 @@ export class Product implements OnInit, AfterViewInit {
       }
     });
   }
-  
+
   closeSuccessNotification() {
     this.showSuccessNotification = false;
     this.successMessage = '';
     this.orderId = undefined;
   }
-  
+
   continueShopping() {
-    this.closeSuccessNotification();
+    this.showSuccessNotification = false;
+    this.successMessage = '';
+    this.orderId = undefined;
   }
-  
+
   showError(title: string, message: string) {
     this.errorTitle = title;
     this.errorNotificationMessage = message;
     this.showErrorNotification = true;
   }
-  
+
   closeErrorNotification() {
     this.showErrorNotification = false;
     this.errorTitle = '';
     this.errorNotificationMessage = '';
   }
-  
+
   showSuccess(title: string, message: string) {
-    this.successMessage = message;
-    this.showSuccessNotification = true;
+    this.crudMessage = message;
+    this.showCrudNotification = true;
     
+    // Fechar automaticamente após 3 segundos
     setTimeout(() => {
-      if (this.showSuccessNotification && !this.orderId) {
-        this.closeSuccessNotification();
-      }
+      this.closeCrudNotification();
     }, 3000);
+  }
+
+  closeCrudNotification() {
+    this.showCrudNotification = false;
+    this.crudMessage = '';
   }
 }

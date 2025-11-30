@@ -1,6 +1,7 @@
 <div>
   <mat-toolbar>
-  <span>My App</span>
+  <img src="https://cdn.folhape.com.br/upload/dn_arquivo/2022/03/image-2022-03-21t100425917.jpg" alt="Logo Grupo Moura" class="toolbar-logo">
+  <span>Marketplace de Produtos</span>
   <span class="example-spacer"></span>
   <button matIconButton class="example-icon favorite-icon" aria-label="Carrinho de compras" (click)="toggleCart()">
     <mat-icon [matBadge]="getCartItemsCount()" [matBadgeHidden]="getCartItemsCount() === 0" matBadgeColor="warn" aria-hidden="false">shopping_cart</mat-icon>
@@ -103,6 +104,7 @@
   <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
 </table>
 <mat-paginator [pageSizeOptions]="[5, 10, 20]"
+                 [pageSize]="5"
                  showFirstLastButtons
                  aria-label="Selecione a página de produtos">
   </mat-paginator>
@@ -214,7 +216,7 @@
   </div>
 </div>
 
-<!-- Notificação de Sucesso -->
+<!-- Notificação de Sucesso do Pedido -->
 <div class="success-notification-overlay" [class.show]="showSuccessNotification" (click)="closeSuccessNotification()"></div>
 <div class="success-notification" [class.show]="showSuccessNotification">
   <div class="notification-header">
@@ -224,18 +226,35 @@
     </button>
   </div>
   <div class="notification-content">
-    <h2>{{ orderId ? 'Compra Finalizada com Sucesso! 🎉' : 'Sucesso!' }}</h2>
-    @if (orderId) {
-      <p class="order-info">Pedido #{{orderId}}</p>
-      <p class="success-text">Seu pedido foi processado e o estoque foi atualizado.</p>
-    } @else {
-      <p class="success-text">{{successMessage}}</p>
-    }
+    <h2>Compra Finalizada com Sucesso! 🎉</h2>
+    <p class="order-info">Pedido #{{orderId}}</p>
+    <p class="success-text">Seu pedido foi processado e o estoque foi atualizado.</p>
   </div>
   <div class="notification-actions">
     <button mat-raised-button color="primary" (click)="continueShopping()">
-      <mat-icon>{{ orderId ? 'shopping_bag' : 'check' }}</mat-icon>
-      {{ orderId ? 'Continuar Comprando' : 'OK' }}
+      <mat-icon>shopping_bag</mat-icon>
+      Continuar Comprando
+    </button>
+  </div>
+</div>
+
+<!-- Notificação de Sucesso CRUD -->
+<div class="success-notification-overlay" [class.show]="showCrudNotification" (click)="closeCrudNotification()"></div>
+<div class="success-notification" [class.show]="showCrudNotification">
+  <div class="notification-header">
+    <mat-icon class="success-icon">check_circle</mat-icon>
+    <button mat-icon-button class="close-button" (click)="closeCrudNotification()" aria-label="Fechar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="notification-content">
+    <h2>Sucesso!</h2>
+    <p class="success-text">{{crudMessage}}</p>
+  </div>
+  <div class="notification-actions">
+    <button mat-raised-button color="primary" (click)="closeCrudNotification()">
+      <mat-icon>check</mat-icon>
+      OK
     </button>
   </div>
 </div>

@@ -2,6 +2,32 @@ table {
   width: 100%;
 }
 
+mat-toolbar {
+  background: linear-gradient(135deg, #00843D 0%, #00A651 100%) !important;
+  color: white !important;
+  box-shadow: 0 2px 8px rgba(0, 132, 61, 0.3);
+
+  span {
+    color: white !important;
+    font-weight: 500;
+    font-size: 20px;
+  }
+
+  .mat-icon {
+    color: white !important;
+  }
+}
+
+.toolbar-logo {
+  height: 40px;
+  width: auto;
+  margin-right: 16px;
+  object-fit: contain;
+  background: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
 .example-spacer {
   flex: 1 1 auto;
 }
@@ -94,11 +120,18 @@ tr.product-row {
   bottom: 24px;
   right: 24px;
   z-index: 900;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  background: linear-gradient(135deg, #00843D 0%, #00A651 100%) !important;
+  color: white !important;
+  box-shadow: 0 4px 12px rgba(0, 132, 61, 0.4);
 
   &:hover {
     transform: scale(1.05);
     transition: transform 0.2s ease;
+    box-shadow: 0 6px 16px rgba(0, 132, 61, 0.6);
+  }
+
+  .mat-icon {
+    color: white !important;
   }
 }
 
