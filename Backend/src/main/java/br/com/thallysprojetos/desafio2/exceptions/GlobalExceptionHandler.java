@@ -8,6 +8,7 @@ import br.com.thallysprojetos.desafio2.exceptions.products.ProductsException;
 import br.com.thallysprojetos.desafio2.exceptions.products.ProductsNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -54,7 +55,7 @@ public class GlobalExceptionHandler {
         return buildErrorResponse(new Exception(message), request, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorMessage> handleDataIntegrityViolationException(Exception ex, HttpServletRequest request) {
         log.error("Data integrity violation: {}", ex.getMessage(), ex);
         String message = "Data integrity error. Please check the provided data and try again.";

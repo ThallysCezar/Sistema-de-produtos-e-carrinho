@@ -3,10 +3,12 @@ package br.com.thallysprojetos.desafio2.services.impl;
 import br.com.thallysprojetos.desafio2.dtos.CheckoutItemDTO;
 import br.com.thallysprojetos.desafio2.dtos.CheckoutRequestDTO;
 import br.com.thallysprojetos.desafio2.dtos.OrdersDTO;
+import br.com.thallysprojetos.desafio2.events.OrderCreatedEvent;
 import br.com.thallysprojetos.desafio2.exceptions.orders.OrdersNotFoundException;
 import br.com.thallysprojetos.desafio2.exceptions.products.InsufficientStockException;
 import br.com.thallysprojetos.desafio2.exceptions.products.ProductsNotFoundException;
 import br.com.thallysprojetos.desafio2.mappers.OrdersMappers;
+import br.com.thallysprojetos.desafio2.messaging.OrderEventPublisher;
 import br.com.thallysprojetos.desafio2.models.OrderItem;
 import br.com.thallysprojetos.desafio2.models.Orders;
 import br.com.thallysprojetos.desafio2.models.Products;
@@ -30,6 +32,7 @@ public class OrdersServiceImpl implements OrdersService {
     private final ProductsRepository productsRepository;
     private final ProductsService productsService;
     private final OrdersMappers ordersMappers;
+    private final OrderEventPublisher orderEventPublisher;
 
     @Transactional
     public OrdersDTO checkout(CheckoutRequestDTO checkoutRequest) {
@@ -72,6 +75,15 @@ public class OrdersServiceImpl implements OrdersService {
         for (CheckoutItemDTO item : checkoutRequest.getItems()) {
             productsService.decreaseStock(item.getProductId(), item.getQuantity());
         }
+
+        // Publicar evento assíncrono (não afeta a resposta ao frontend)
+        OrderCreatedEvent event = new OrderCreatedEvent(
+                savedOrder.getId(),
+                savedOrder.getTotal(),
+                savedOrder.getItems().size(),
+                savedOrder.getCreatedAt()
+        );
+        orderEventPublisher.publishOrderCreated(event);
 
         return ordersMappers.toDTO(savedOrder);
     }
