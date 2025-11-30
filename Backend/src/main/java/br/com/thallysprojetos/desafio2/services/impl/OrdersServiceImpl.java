@@ -76,7 +76,6 @@ public class OrdersServiceImpl implements OrdersService {
             productsService.decreaseStock(item.getProductId(), item.getQuantity());
         }
 
-        // Publicar evento assíncrono (não afeta a resposta ao frontend)
         OrderCreatedEvent event = new OrderCreatedEvent(
                 savedOrder.getId(),
                 savedOrder.getTotal(),

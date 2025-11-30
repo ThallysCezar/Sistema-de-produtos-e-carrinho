@@ -19,10 +19,5 @@ public class OrderEventConsumer {
         log.info("Created At: {}", event.getCreatedAt());
         log.info("========================================");
         
-        // Aqui você pode adicionar lógica como:
-        // - Enviar email (futuro)
-        // - Atualizar dashboard (futuro)
-        // - Gerar relatório (futuro)
-        // - Notificar sistema externo (futuro)
     }
 }
