@@ -25,7 +25,17 @@ COPY --from=build /app/dist/Frontend/browser /usr/share/nginx/html
 # Script de inicialização para substituir variáveis de ambiente
 RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
     echo 'set -e' >> /docker-entrypoint.sh && \
-    echo 'envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
+    echo '# Define BACKEND_URL padrão se não estiver definida' >> /docker-entrypoint.sh && \
+    echo 'export BACKEND_URL="${BACKEND_URL:-http://backend:8080}"' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
+    echo '# Substitui variáveis de ambiente no nginx.conf' >> /docker-entrypoint.sh && \
+    echo 'envsubst '\''$BACKEND_URL'\'' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
+    echo '# Testa a configuração do Nginx' >> /docker-entrypoint.sh && \
+    echo 'nginx -t' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
+    echo '# Inicia o Nginx' >> /docker-entrypoint.sh && \
     echo 'exec nginx -g "daemon off;"' >> /docker-entrypoint.sh && \
     chmod +x /docker-entrypoint.sh
 
