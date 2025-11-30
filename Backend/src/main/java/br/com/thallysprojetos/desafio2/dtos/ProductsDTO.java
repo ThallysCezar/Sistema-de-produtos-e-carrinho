@@ -2,7 +2,6 @@ package br.com.thallysprojetos.desafio2.dtos;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.PositiveOrZero;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -16,15 +15,13 @@ public class ProductsDTO {
 
     private Long id;
 
-    @NotBlank(message = "Nome do produto é obrigatório")
+    @NotBlank(message = "Product name is required")
     private String name;
 
-    @NotNull(message = "Preço é obrigatório")
-    @PositiveOrZero(message = "Preço não pode ser negativo")
+    @NotNull(message = "Price is required")
     private BigDecimal price;
 
-    @NotNull(message = "Estoque é obrigatório")
-    @PositiveOrZero(message = "Estoque não pode ser negativo")
+    @NotNull(message = "Stock is required")
     private Integer stock;
 
 }

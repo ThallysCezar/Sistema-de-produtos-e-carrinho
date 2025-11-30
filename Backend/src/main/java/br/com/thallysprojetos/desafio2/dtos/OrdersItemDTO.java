@@ -15,13 +15,13 @@ public class OrdersItemDTO {
 
     private Long id;
 
-    @NotNull(message = "ID do produto é obrigatório")
+    @NotNull(message = "Product id is required")
     private Long productId;
 
     private String productName;
 
-    @NotNull(message = "Quantidade é obrigatória")
-    @Positive(message = "Quantidade deve ser maior que zero")
+    @NotNull(message = "Quantity is required")
+    @Positive(message = "Quantity must be greater than zero")
     private Integer quantity;
 
     private BigDecimal price;

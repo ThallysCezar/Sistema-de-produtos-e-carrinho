@@ -14,8 +14,11 @@ import java.util.List;
 public class OrdersDTO {
 
     private Long id;
+
     private List<OrdersItemDTO> items;
+
     private BigDecimal total;
+
     private LocalDateTime createdAt;
 
 }

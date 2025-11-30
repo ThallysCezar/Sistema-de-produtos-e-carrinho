@@ -21,17 +21,15 @@ public class Products {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotBlank(message = "Nome do produto é obrigatório")
+    @NotBlank(message = "Product name is required")
     @Column(nullable = false)
     private String name;
 
-    @NotNull(message = "Preço é obrigatório")
-    @PositiveOrZero(message = "Preço não pode ser negativo")
+    @NotNull(message = "Price is required")
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal price;
 
-    @NotNull(message = "Estoque é obrigatório")
-    @PositiveOrZero(message = "Estoque não pode ser negativo")
+    @NotNull(message = "Stock is required")
     @Column(nullable = false)
     private Integer stock;
 

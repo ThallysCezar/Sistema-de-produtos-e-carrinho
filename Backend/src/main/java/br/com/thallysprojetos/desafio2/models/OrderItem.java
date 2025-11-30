@@ -28,8 +28,8 @@ public class OrderItem {
     @JoinColumn(name = "product_id", nullable = false)
     private Products product;
 
-    @NotNull(message = "Quantidade é obrigatória")
-    @Positive(message = "Quantidade deve ser maior que zero")
+    @NotNull(message = "Quantity is required")
+    @Positive(message = "Quantity must be greater than zero")
     @Column(nullable = false)
     private Integer quantity;
 
