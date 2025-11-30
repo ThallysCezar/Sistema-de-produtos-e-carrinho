@@ -16,12 +16,7 @@ COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENV SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/postgres \
-    SPRING_DATASOURCE_USERNAME=postgres \
-    SPRING_DATASOURCE_PASSWORD=123456 \
-    SPRING_RABBITMQ_HOST=rabbitmq \
-    SPRING_RABBITMQ_PORT=5672 \
-    SPRING_RABBITMQ_USERNAME=guest \
-    SPRING_RABBITMQ_PASSWORD=guest
+# Variáveis de ambiente serão injetadas pelo docker-compose
+ENV SPRING_PROFILES_ACTIVE=prod
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
