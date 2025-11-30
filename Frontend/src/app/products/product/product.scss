@@ -3,9 +3,9 @@ table {
 }
 
 mat-toolbar {
-  background: linear-gradient(135deg, #00843D 0%, #00A651 100%) !important;
+  background: linear-gradient(135deg, #003E7E 0%, #0066B3 100%) !important;
   color: white !important;
-  box-shadow: 0 2px 8px rgba(0, 132, 61, 0.3);
+  box-shadow: 0 2px 8px rgba(0, 62, 126, 0.3);
 
   span {
     color: white !important;
@@ -120,14 +120,14 @@ tr.product-row {
   bottom: 24px;
   right: 24px;
   z-index: 900;
-  background: linear-gradient(135deg, #00843D 0%, #00A651 100%) !important;
+  background: linear-gradient(135deg, #003E7E 0%, #0066B3 100%) !important;
   color: white !important;
-  box-shadow: 0 4px 12px rgba(0, 132, 61, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 62, 126, 0.4);
 
   &:hover {
     transform: scale(1.05);
     transition: transform 0.2s ease;
-    box-shadow: 0 6px 16px rgba(0, 132, 61, 0.6);
+    box-shadow: 0 6px 16px rgba(0, 62, 126, 0.6);
   }
 
   .mat-icon {
@@ -353,9 +353,10 @@ tr.product-row {
   align-items: center;
   padding: 20px 24px;
   border-bottom: 1px solid #e0e0e0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #003E7E 0%, #0066B3 100%);
   color: white;
   border-radius: 12px 12px 0 0;
+  box-shadow: 0 2px 8px rgba(0, 62, 126, 0.2);
 
   h2 {
     margin: 0;
@@ -365,6 +366,10 @@ tr.product-row {
 
   button {
     color: white;
+
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
   }
 }
 
@@ -396,6 +401,17 @@ tr.product-row {
 
   button {
     min-width: 100px;
+
+    &[color="primary"] {
+      background: linear-gradient(135deg, #003E7E 0%, #0066B3 100%) !important;
+      color: white !important;
+
+      &:hover:not([disabled]) {
+        box-shadow: 0 4px 12px rgba(0, 62, 126, 0.4);
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
+      }
+    }
   }
 }
 
