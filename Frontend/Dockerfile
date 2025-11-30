@@ -29,8 +29,19 @@ RUN echo '#!/bin/sh' > /docker-entrypoint.sh && \
     echo '# Define BACKEND_URL padrão se não estiver definida' >> /docker-entrypoint.sh && \
     echo 'export BACKEND_URL="${BACKEND_URL:-http://backend:8080}"' >> /docker-entrypoint.sh && \
     echo '' >> /docker-entrypoint.sh && \
+    echo '# Debug: mostra a URL do backend' >> /docker-entrypoint.sh && \
+    echo 'echo "======================================"' >> /docker-entrypoint.sh && \
+    echo 'echo "Configurando Nginx com BACKEND_URL:"' >> /docker-entrypoint.sh && \
+    echo 'echo "$BACKEND_URL"' >> /docker-entrypoint.sh && \
+    echo 'echo "======================================"' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
     echo '# Substitui variáveis de ambiente no nginx.conf' >> /docker-entrypoint.sh && \
     echo 'envsubst '\''$BACKEND_URL'\'' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf' >> /docker-entrypoint.sh && \
+    echo '' >> /docker-entrypoint.sh && \
+    echo '# Debug: mostra a configuração gerada' >> /docker-entrypoint.sh && \
+    echo 'echo "Configuração do proxy_pass gerada:"' >> /docker-entrypoint.sh && \
+    echo 'grep -A 5 "location /api/" /etc/nginx/nginx.conf' >> /docker-entrypoint.sh && \
+    echo 'echo "======================================"' >> /docker-entrypoint.sh && \
     echo '' >> /docker-entrypoint.sh && \
     echo '# Testa a configuração do Nginx' >> /docker-entrypoint.sh && \
     echo 'nginx -t' >> /docker-entrypoint.sh && \
