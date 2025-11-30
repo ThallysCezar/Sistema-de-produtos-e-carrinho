@@ -1,0 +1,262 @@
+<div>
+  <mat-toolbar>
+  <span>My App</span>
+  <span class="example-spacer"></span>
+  <button matIconButton class="example-icon favorite-icon" aria-label="Carrinho de compras" (click)="toggleCart()">
+    <mat-icon [matBadge]="getCartItemsCount()" [matBadgeHidden]="getCartItemsCount() === 0" matBadgeColor="warn" aria-hidden="false">shopping_cart</mat-icon>
+  </button>
+</mat-toolbar>
+</div>
+
+<div class="mat-elevation-z8 table-container">
+  <table mat-table
+       [dataSource]="dataSource" multiTemplateDataRows
+       class="mat-elevation-z8">
+
+  <!-- Nome -->
+  <ng-container matColumnDef="name">
+    <th mat-header-cell *matHeaderCellDef>Produto</th>
+    <td mat-cell *matCellDef="let product">{{product.name}}</td>
+  </ng-container>
+
+  <!-- Preço -->
+  <ng-container matColumnDef="price">
+    <th mat-header-cell *matHeaderCellDef>Preço</th>
+    <td mat-cell *matCellDef="let product">R$ {{product.price.toFixed(2)}}</td>
+  </ng-container>
+
+  <!-- Estoque -->
+  <ng-container matColumnDef="stock">
+    <th mat-header-cell *matHeaderCellDef>Estoque</th>
+    <td mat-cell *matCellDef="let product">
+      <span [class.low-stock]="product.stock <= 10">{{product.stock}} un.</span>
+    </td>
+  </ng-container>
+
+  <!-- Ações -->
+  <ng-container matColumnDef="actions">
+    <th mat-header-cell *matHeaderCellDef>Ações</th>
+    <td mat-cell *matCellDef="let product">
+      <div class="action-buttons">
+        <button mat-icon-button color="primary" (click)="addToCart(product); $event.stopPropagation()"
+                aria-label="Adicionar ao carrinho" matTooltip="Adicionar ao carrinho">
+          <mat-icon>add_shopping_cart</mat-icon>
+        </button>
+        <button mat-icon-button color="accent" (click)="openEditProductModal(product); $event.stopPropagation()"
+                aria-label="Editar produto" matTooltip="Editar">
+          <mat-icon>edit</mat-icon>
+        </button>
+        <button mat-icon-button color="warn" (click)="deleteProduct(product); $event.stopPropagation()"
+                aria-label="Deletar produto" matTooltip="Deletar">
+          <mat-icon>delete</mat-icon>
+        </button>
+      </div>
+    </td>
+  </ng-container>
+
+  <!-- Expandir -->
+  <ng-container matColumnDef="expand">
+    <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+    <td mat-cell *matCellDef="let product">
+      <button
+        matIconButton
+        aria-label="expand row"
+        (click)="toggle(product); $event.stopPropagation()"
+        class="example-toggle-button"
+        [class.example-toggle-button-expanded]="isExpanded(product)">
+        <mat-icon>keyboard_arrow_down</mat-icon>
+      </button>
+    </td>
+  </ng-container>
+
+  <!-- Detalhes expandidos -->
+  <ng-container matColumnDef="expandedDetail">
+    <td mat-cell *matCellDef="let product" [attr.colspan]="columnsToDisplayWithExpand.length">
+      <div class="product-detail-wrapper"
+        [class.product-detail-wrapper-expanded]="isExpanded(product)">
+        <div class="product-detail">
+          <h3>Informações do Produto</h3>
+          <div class="product-info-grid">
+            <div class="info-item">
+              <strong>ID:</strong> {{product.id}}
+            </div>
+            <div class="info-item">
+              <strong>Nome:</strong> {{product.name}}
+            </div>
+            <div class="info-item">
+              <strong>Preço:</strong> R$ {{product.price.toFixed(2)}}
+            </div>
+            <div class="info-item">
+              <strong>Estoque:</strong> {{product.stock}} unidades
+            </div>
+          </div>
+        </div>
+      </div>
+    </td>
+  </ng-container>
+
+  <tr mat-header-row *matHeaderRowDef="columnsToDisplayWithExpand"></tr>
+  <tr mat-row *matRowDef="let product; columns: columnsToDisplayWithExpand;"
+      class="product-row"
+      [class.expanded-row]="isExpanded(product)">
+  </tr>
+  <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="detail-row"></tr>
+</table>
+<mat-paginator [pageSizeOptions]="[5, 10, 20]"
+                 showFirstLastButtons
+                 aria-label="Selecione a página de produtos">
+  </mat-paginator>
+
+  <!-- Botão flutuante para adicionar produto -->
+  <button mat-fab class="fab-add-product" color="primary" (click)="openAddProductModal()" aria-label="Adicionar produto">
+    <mat-icon>add</mat-icon>
+  </button>
+</div>
+
+<!-- Painel lateral do carrinho -->
+<div class="cart-overlay" [class.cart-overlay-open]="isCartOpen" (click)="toggleCart()"></div>
+<div class="cart-panel" [class.cart-panel-open]="isCartOpen">
+  <div class="cart-header">
+    <h2>Carrinho de Compras</h2>
+    <button mat-icon-button (click)="toggleCart()" aria-label="Fechar carrinho">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <div class="cart-content">
+    @if (cartItems.length === 0) {
+      <div class="empty-cart">
+        <mat-icon>shopping_cart</mat-icon>
+        <p>Seu carrinho está vazio</p>
+      </div>
+    } @else {
+      <div class="cart-items">
+        @for (item of cartItems; track item.product.id) {
+          <div class="cart-item">
+            <div class="item-info">
+              <h3>{{item.product.name}}</h3>
+              <p class="item-symbol">ID: {{item.product.id}} - Estoque: {{item.product.stock}}</p>
+              <p class="item-price">R$ {{item.product.price.toFixed(2)}} cada</p>
+            </div>
+            <div class="item-actions">
+              <div class="quantity-controls">
+                <button mat-icon-button (click)="decreaseQuantity(item)" aria-label="Diminuir quantidade">
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <span class="quantity">{{item.quantity}}</span>
+                <button mat-icon-button (click)="increaseQuantity(item)" aria-label="Aumentar quantidade">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+              <p class="item-subtotal">R$ {{(item.product.price * item.quantity).toFixed(2)}}</p>
+              <button mat-icon-button color="warn" (click)="removeFromCart(item)" aria-label="Remover item">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+
+  @if (cartItems.length > 0) {
+    <div class="cart-footer">
+      <div class="cart-total">
+        <span class="total-label">Total:</span>
+        <span class="total-value">R$ {{getCartTotal().toFixed(2)}}</span>
+      </div>
+      <button mat-raised-button color="primary" class="checkout-button" (click)="finalizePurchase()" [disabled]="isLoading">
+        {{ isLoading ? 'Processando...' : 'Finalizar Compra' }}
+      </button>
+    </div>
+  }
+</div>
+
+<!-- Modal de Adicionar/Editar Produto -->
+<div class="modal-overlay" [class.modal-overlay-open]="isProductModalOpen" (click)="closeProductModal()"></div>
+<div class="product-modal" [class.product-modal-open]="isProductModalOpen">
+  <div class="modal-header">
+    <h2>{{editingProduct ? 'Editar Produto' : 'Adicionar Produto'}}</h2>
+    <button mat-icon-button (click)="closeProductModal()" aria-label="Fechar modal">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <form [formGroup]="productForm" class="modal-content">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Nome do Produto</mat-label>
+      <input matInput formControlName="name" placeholder="Digite o nome do produto" required>
+      <mat-icon matPrefix>shopping_bag</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Preço</mat-label>
+      <span matTextPrefix>R$&nbsp;</span>
+      <input matInput type="number" formControlName="price" placeholder="0.00" required min="0" step="0.01">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Estoque</mat-label>
+      <input matInput type="number" formControlName="stock" placeholder="0" required min="0">
+      <mat-icon matPrefix>inventory</mat-icon>
+    </mat-form-field>
+
+
+  </form>
+
+  <div class="modal-footer">
+    <button mat-stroked-button (click)="closeProductModal()">
+      Cancelar
+    </button>
+    <button mat-raised-button color="primary" (click)="saveProduct()" [disabled]="productForm.invalid">
+      {{editingProduct ? 'Atualizar' : 'Adicionar'}}
+    </button>
+  </div>
+</div>
+
+<!-- Notificação de Sucesso -->
+<div class="success-notification-overlay" [class.show]="showSuccessNotification" (click)="closeSuccessNotification()"></div>
+<div class="success-notification" [class.show]="showSuccessNotification">
+  <div class="notification-header">
+    <mat-icon class="success-icon">check_circle</mat-icon>
+    <button mat-icon-button class="close-button" (click)="closeSuccessNotification()" aria-label="Fechar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="notification-content">
+    <h2>{{ orderId ? 'Compra Finalizada com Sucesso! 🎉' : 'Sucesso!' }}</h2>
+    @if (orderId) {
+      <p class="order-info">Pedido #{{orderId}}</p>
+      <p class="success-text">Seu pedido foi processado e o estoque foi atualizado.</p>
+    } @else {
+      <p class="success-text">{{successMessage}}</p>
+    }
+  </div>
+  <div class="notification-actions">
+    <button mat-raised-button color="primary" (click)="continueShopping()">
+      <mat-icon>{{ orderId ? 'shopping_bag' : 'check' }}</mat-icon>
+      {{ orderId ? 'Continuar Comprando' : 'OK' }}
+    </button>
+  </div>
+</div>
+
+<!-- Notificação de Erro -->
+<div class="error-notification-overlay" [class.show]="showErrorNotification" (click)="closeErrorNotification()"></div>
+<div class="error-notification" [class.show]="showErrorNotification">
+  <div class="notification-header error-header">
+    <mat-icon class="error-icon">error</mat-icon>
+    <button mat-icon-button class="close-button" (click)="closeErrorNotification()" aria-label="Fechar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+  <div class="notification-content">
+    <h2>{{errorTitle}}</h2>
+    <p class="error-text">{{errorNotificationMessage}}</p>
+  </div>
+  <div class="notification-actions">
+    <button mat-raised-button color="warn" (click)="closeErrorNotification()">
+      <mat-icon>close</mat-icon>
+      Fechar
+    </button>
+  </div>
+</div>
