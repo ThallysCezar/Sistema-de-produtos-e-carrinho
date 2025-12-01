@@ -714,7 +714,7 @@ Frontend/
 
 Ao acessar a aplicação, você é direcionado para a tela principal que exibe a listagem de todos os produtos disponíveis.
 
-![Tela de Listagem de Produtos](Assets\imagens\lista_produtos.jpeg)
+![Tela de Listagem de Produtos](https://github.com/ThallysCezar/Sistema-de-produtos-e-carrinho/blob/main/Assets/imagens/lista_produtos.jpeg))
 
 **Funcionalidades disponíveis:**
 - ✅ **Visualizar produtos** com nome, preço e estoque
@@ -730,7 +730,7 @@ Ao acessar a aplicação, você é direcionado para a tela principal que exibe a
 
 Ao expandir um produto, você visualiza informações adicionais e pode adicioná-lo ao carrinho.
 
-![Detalhes do Produto Expandido](Assets\imagens\detalhes_produtos.jpeg)
+![Detalhes do Produto Expandido](https://github.com/ThallysCezar/Sistema-de-produtos-e-carrinho/blob/main/Assets/imagens/detalhes_produtos.jpeg))
 
 **O que você vê:**
 - 📦 **Estoque disponível** em tempo real
@@ -743,7 +743,7 @@ Ao expandir um produto, você visualiza informações adicionais e pode adicion�
 
 Botões interativo para criar um novo produto, editar e deletar um existente.
 
-![Botões de Adicionar Produto](Assets\imagens\crud_produtos.jpeg)
+![Botões de Adicionar Produto](https://github.com/ThallysCezar/Sistema-de-produtos-e-carrinho/blob/main/Assets/imagens/crud_produtos.jpeg))
 
 **Campos do formulário:**
 - 📝 **Nome do produto** (obrigatório)
@@ -761,7 +761,7 @@ Botões interativo para criar um novo produto, editar e deletar um existente.
 
 Ao adicionar produtos, o carrinho é aberto automaticamente na lateral direita da tela.
 
-![Carrinho de Compras](Assets\imagens\carrinho_aberto_produtos.jpeg)
+![Carrinho de Compras](https://github.com/ThallysCezar/Sistema-de-produtos-e-carrinho/blob/main/Assets/imagens/carrinho_aberto_produtos.jpeg)
 
 **Funcionalidades do carrinho:**
 - 🛒 **Lista de produtos** adicionados com imagem, nome e preço
@@ -783,7 +783,7 @@ Ao adicionar produtos, o carrinho é aberto automaticamente na lateral direita d
 
 Ao clicar em "Finalizar Compra", o sistema processa o pedido de forma assíncrona via RabbitMQ.
 
-![Notificação de Pedido Finalizado](Assets\imagens\checkout_sucesso_produtos.jpeg)
+![Notificação de Pedido Finalizado](https://github.com/ThallysCezar/Sistema-de-produtos-e-carrinho/blob/main/Assets/imagens/checkout_sucesso_produtos.jpeg)
 
 **O que acontece:**
 1. ✅ **Validação de estoque** para todos os produtos
