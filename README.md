@@ -6,14 +6,28 @@ Um pequeno sistema de produtos com carrinho de compras e cálculo automático de
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.5-brightgreen?style=flat-square&logo=spring)
 ![Angular](https://img.shields.io/badge/Angular-21-red?style=flat-square&logo=angular)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue?style=flat-square&logo=postgresql)
+![RabbitMQ](https://img.shields.io/badge/RabbitMQ-3.13-orange?style=flat-square&logo=rabbitmq)
+![Docker](https://img.shields.io/badge/Docker-Compose-blue?style=flat-square&logo=docker)
 ![Material Design](https://img.shields.io/badge/Material%20Design-UI-purple?style=flat-square&logo=material-design)
+
+## 🌐 Deploy em Produção
+
+**🚀 Aplicação disponível online:**
+
+- **Frontend**: [https://sistema-de-produtos-e-carrinho-frontend.onrender.com](https://sistema-de-produtos-e-carrinho-frontend.onrender.com)
+- **Backend API**: [https://sistema-de-produtos-e-carrinho.onrender.com](https://sistema-de-produtos-e-carrinho.onrender.com)
+- **Documentação Swagger**: [https://sistema-de-produtos-e-carrinho.onrender.com/swagger-ui.html](https://sistema-de-produtos-e-carrinho.onrender.com/swagger-ui.html)
+
+> ⚠️ **IMPORTANTE**: O serviço de hospedagem (Render) coloca o site em modo inativo (sleep mode) após 15 minutos sem acesso. Caso encontre um erro ao acessar pela primeira vez, por favor, **aguarde cerca de 30-60 segundos** para que o serviço seja reativado automaticamente. Após o primeiro acesso, a aplicação ficará rápida e responsiva.
 
 ## 📋 Índice
 
+- [Deploy em Produção](#-deploy-em-produção)
 - [Sobre o Projeto](#-sobre-o-projeto)
 - [Funcionalidades](#-funcionalidades)
 - [Tecnologias](#-tecnologias)
 - [Arquitetura](#-arquitetura)
+- [Docker e Containerização](#-docker-e-containerização)
 - [Pré-requisitos](#-pré-requisitos)
 - [Instalação e Configuração](#-instalação-e-configuração)
 - [Executando o Projeto](#-executando-o-projeto)
@@ -25,13 +39,15 @@ Um pequeno sistema de produtos com carrinho de compras e cálculo automático de
 
 ## 📖 Sobre o Projeto
 
-Este projeto é uma aplicação completa de e-commerce simplificada que demonstra a integração entre um backend robusto em Spring Boot e um frontend moderno em Angular. O sistema permite:
+Este projeto é uma aplicação completa de e-commerce simplificada que demonstra a integração entre um backend robusto em Spring Boot e um frontend moderno em Angular, com arquitetura de microsserviços e mensageria assíncrona. O sistema permite:
 
 - **Gerenciamento de Produtos**: CRUD completo com validações
 - **Carrinho de Compras**: Adicionar, remover e ajustar quantidades
 - **Controle de Estoque**: Validação automática e atualização em tempo real
-- **Finalização de Pedidos**: Checkout com cálculo automático de totais
+- **Finalização de Pedidos**: Checkout com processamento assíncrono via RabbitMQ
 - **Interface Responsiva**: Design moderno com Material Design
+- **Containerização**: Docker e Docker Compose para ambientes isolados
+- **Deploy em Produção**: Hospedado no Render com CloudAMQP
 
 ## ✨ Funcionalidades
 
@@ -53,10 +69,13 @@ Este projeto é uma aplicação completa de e-commerce simplificada que demonstr
 
 ### 💳 Finalização de Compra
 - ✅ Checkout com validação de estoque
+- ✅ Processamento assíncrono via RabbitMQ
+- ✅ Resposta imediata ao usuário (não bloqueia UI)
 - ✅ Atualização automática de estoque após compra
 - ✅ Geração de pedido com ID único
 - ✅ Notificações visuais de sucesso/erro
 - ✅ Limpeza automática do carrinho após compra
+- ✅ Dead Letter Queue para tratamento de erros
 
 ### 🎨 Interface do Usuário
 - ✅ Design responsivo e moderno
@@ -75,12 +94,15 @@ Este projeto é uma aplicação completa de e-commerce simplificada que demonstr
 | **Spring Boot** | 3.5.5 | Framework para criação de APIs REST |
 | **Spring Data JPA** | 3.5.5 | Persistência e mapeamento objeto-relacional |
 | **Spring Validation** | 3.5.5 | Validação de dados com Bean Validation |
+| **Spring AMQP** | 3.5.5 | Integração com RabbitMQ |
 | **PostgreSQL** | 16+ | Banco de dados relacional |
+| **RabbitMQ** | 3.13+ | Message broker para processamento assíncrono |
 | **Flyway** | Latest | Controle de versionamento do banco de dados |
 | **Lombok** | Latest | Redução de boilerplate code |
 | **ModelMapper** | 3.2.4 | Mapeamento entre DTOs e Entities |
 | **SpringDoc OpenAPI** | 2.8.13 | Documentação Swagger/OpenAPI |
 | **Maven** | 3.8+ | Gerenciamento de dependências |
+| **Docker** | Latest | Containerização da aplicação |
 
 ### Frontend
 
@@ -94,51 +116,79 @@ Este projeto é uma aplicação completa de e-commerce simplificada que demonstr
 | **Angular Router** | 21.0.0 | Roteamento SPA |
 | **Angular CDK** | 21.0.1 | Kit de desenvolvimento de componentes |
 | **NPM** | 11.6.2 | Gerenciador de pacotes |
+| **Nginx** | Latest | Servidor web e proxy reverso (produção) |
+
+### DevOps & Infraestrutura
+
+| Tecnologia | Versão | Descrição |
+|------------|--------|-----------|
+| **Docker** | Latest | Containerização de aplicações |
+| **Docker Compose** | Latest | Orquestração de containers |
+| **Render** | Cloud | Plataforma de deploy (PaaS) |
+| **CloudAMQP** | Cloud | RabbitMQ gerenciado (CloudAMQP Lemur) |
+| **Nginx** | Alpine | Servidor web para frontend em produção |
+| **Maven Wrapper** | Included | Build do backend sem Maven instalado |
 
 ## 🏗️ Arquitetura
 
-### Arquitetura Geral
+### Arquitetura Geral (com Mensageria Assíncrona)
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                    FRONTEND (Angular)                   │
-│  ┌────────────┐  ┌────────────┐  ┌────────────────┐   │
-│  │ Components │  │  Services  │  │     Models     │   │
-│  │            │  │            │  │                │   │
-│  │ - Product  │  │ - Product  │  │ - Product      │   │
-│  │ - Cart     │  │ - Order    │  │ - CartItem     │   │
-│  │ - Modal    │  │ - HTTP     │  │ - Order        │   │
-│  └────────────┘  └────────────┘  └────────────────┘   │
-└────────────────────┬────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    FRONTEND (Angular 21)                    │
+│  ┌────────────┐  ┌────────────┐  ┌────────────────┐       │
+│  │ Components │  │  Services  │  │     Models     │       │
+│  │            │  │            │  │                │       │
+│  │ - Product  │  │ - Product  │  │ - Product      │       │
+│  │ - Cart     │  │ - Order    │  │ - CartItem     │       │
+│  │ - Modal    │  │ - HTTP     │  │ - Order        │       │
+│  └────────────┘  └────────────┘  └────────────────┘       │
+└────────────────────┬────────────────────────────────────────┘
                      │ HTTP/REST (JSON)
-                     │ Port: 4200 → 8080
-┌────────────────────┴────────────────────────────────────┐
-│                    BACKEND (Spring Boot)                │
-│  ┌────────────┐  ┌────────────┐  ┌────────────────┐   │
-│  │Controllers │  │  Services  │  │  Repositories  │   │
-│  │            │  │            │  │                │   │
-│  │ - Products │─▶│ - Products │─▶│ - JPA/Hibernate│   │
-│  │ - Orders   │  │ - Orders   │  │                │   │
-│  └────────────┘  └────────────┘  └────────────────┘   │
-│                                           │             │
-│  ┌────────────┐  ┌────────────┐         │             │
-│  │   DTOs     │  │  Entities  │         │             │
-│  │            │  │            │         │             │
-│  │ - Request  │  │ - Product  │         │             │
-│  │ - Response │  │ - Order    │         │             │
-│  └────────────┘  └────────────┘         │             │
-└──────────────────────────────────────────┼─────────────┘
-                                           │ JDBC
-                     ┌─────────────────────┴──────────────┐
-                     │      PostgreSQL Database           │
-                     │  ┌──────────┐  ┌──────────────┐   │
-                     │  │ Products │  │    Orders    │   │
-                     │  └──────────┘  └──────────────┘   │
-                     │  ┌──────────────────────────────┐ │
-                     │  │      Order_Items             │ │
-                     │  └──────────────────────────────┘ │
-                     └───────────────────────────────────┘
+                     │ Dev: 4200→8080 | Prod: /api→Backend
+┌────────────────────┴────────────────────────────────────────┐
+│               BACKEND (Spring Boot 3.5.5)                   │
+│  ┌────────────┐  ┌────────────┐  ┌────────────────┐       │
+│  │Controllers │  │  Services  │  │  Repositories  │       │
+│  │            │  │            │  │                │       │
+│  │ - Products │─▶│ - Products │─▶│ - JPA/Hibernate│       │
+│  │ - Orders   │  │ - Orders   │  │                │       │
+│  └────────────┘  └─────┬──────┘  └────────────────┘       │
+│                        │                  │                 │
+│                        │ ④ Publish        │ ③ Save Order    │
+│                        ▼                  ▼                 │
+│  ┌──────────────────────────────┐  ┌──────────────┐       │
+│  │   RabbitMQ Publisher         │  │ PostgreSQL   │       │
+│  │  (OrderMessagePublisher)     │  │   Database   │       │
+│  └──────────────┬───────────────┘  └──────────────┘       │
+│                 │                           ▲               │
+│                 │                           │ ⑥ Update      │
+│  ┌──────────────▼───────────────┐          │               │
+│  │   RabbitMQ Consumer          │──────────┘               │
+│  │  (OrderMessageConsumer)      │                          │
+│  │  - Processa assíncrono       │                          │
+│  │  - Valida estoque            │                          │
+│  │  - Atualiza status           │                          │
+│  └──────────────────────────────┘                          │
+└──────────────────┬──────────────────────────────────────────┘
+                   │ AMQP (SSL)
+            ┌──────┴──────────────────────────────┐
+            │       RabbitMQ (CloudAMQP)          │
+            │  ┌─────────────┐  ┌──────────────┐ │
+            │  │   Exchange  │  │    Queue     │ │
+            │  │order.exchange  │ order.queue  │ │
+            │  └─────────────┘  └──────────────┘ │
+            │  Routing Key: order.created         │
+            └─────────────────────────────────────┘
 ```
+
+**Fluxo de Checkout:**
+1. Frontend envia POST /checkout
+2. Backend responde **imediatamente** com 200 OK + Order ID
+3. Backend salva pedido no PostgreSQL
+4. Backend publica mensagem no RabbitMQ
+5. Consumer processa assíncrono (não bloqueia usuário)
+6. Consumer atualiza status do pedido
 
 ### Padrões e Práticas
 
@@ -147,9 +197,12 @@ Este projeto é uma aplicação completa de e-commerce simplificada que demonstr
   - 📦 DTOs para transferência de dados
   - ✅ Validação com Bean Validation
   - 🔄 Mapeamento automático com ModelMapper
-  - 🌐 CORS configurado para integração
+  - 🐰 Mensageria assíncrona com RabbitMQ (AMQP)
+  - 🌐 CORS dinâmico (dev/prod)
   - 📚 Documentação automática com Swagger
   - 🗃️ Migrations com Flyway
+  - 🔧 Spring Profiles (dev/prod)
+  - 🐳 Containerizado com Docker
 
 - **Frontend**:
   - 🎯 Componentes modulares e reutilizáveis
@@ -159,10 +212,95 @@ Este projeto é uma aplicação completa de e-commerce simplificada que demonstr
   - 🔌 Services para comunicação HTTP
   - 💾 Tipagem forte com TypeScript
   - 🎭 Change Detection otimizado
+  - 🧹 Cleanup automático de subscriptions (destroy$)
+  - 🌐 Environments (dev/prod)
+  - 🐳 Multi-stage build com Nginx
+
+## 🐳 Docker e Containerização
+
+O projeto está completamente dockerizado para facilitar o desenvolvimento e deploy:
+
+### Ambiente de Desenvolvimento Local
+
+```bash
+# Subir todos os serviços com um comando
+docker-compose up -d
+
+# Serviços incluídos:
+# - PostgreSQL (porta 5433)
+# - RabbitMQ (portas 5673, 15673)
+# - Backend Spring Boot (porta 8081)
+# - Frontend Angular (porta 80)
+```
+
+### Características do Docker Setup
+
+- **Multi-stage Builds**: Otimização de tamanho das imagens
+  - Backend: Maven build → JRE runtime (Alpine)
+  - Frontend: Node build → Nginx serve (Alpine)
+
+- **Healthchecks**: Garantem que serviços estejam prontos
+  - PostgreSQL: `pg_isready`
+  - RabbitMQ: Management API check
+
+- **Volumes Nomeados**: Persistência de dados
+  - `postgres_data`: Dados do PostgreSQL
+  - `rabbitmq_data`: Mensagens do RabbitMQ
+
+- **Variáveis de Ambiente**: Configuração flexível
+  - `.env` para desenvolvimento local
+  - Environment variables no Render para produção
+
+### Comandos Úteis Docker
+
+```bash
+# Ver logs de um serviço
+docker-compose logs -f backend
+
+# Reiniciar um serviço específico
+docker-compose restart backend
+
+# Parar todos os serviços
+docker-compose down
+
+# Parar e remover volumes (limpar dados)
+docker-compose down -v
+
+# Rebuild de imagens
+docker-compose build --no-cache
+```
+
+### Deploy em Produção (Render)
+
+O projeto está configurado para deploy automatizado no Render:
+
+- **Backend**: Web Service com Docker
+  - Build context: `Backend`
+  - Dockerfile: `Backend/Dockerfile`
+  - Environment: Spring Profile `prod`
+
+- **Frontend**: Static Site com Nginx
+  - Build context: `Frontend`
+  - Dockerfile: `Frontend/Dockerfile`
+  - Proxy reverso para Backend via `/api`
+
+- **Banco de Dados**: PostgreSQL gerenciado pelo Render
+
+- **Mensageria**: RabbitMQ gerenciado pelo CloudAMQP
 
 ## 📋 Pré-requisitos
 
-### Obrigatórios
+### Opção 1: Desenvolvimento com Docker (Recomendado)
+
+- **Docker** e **Docker Compose**
+  ```bash
+  docker --version        # Docker 20.x.x ou superior
+  docker-compose --version # 2.x.x ou superior
+  ```
+
+**Com Docker, você NÃO precisa instalar:** Java, Node.js, PostgreSQL, RabbitMQ ou Maven. Tudo roda em containers isolados!
+
+### Opção 2: Desenvolvimento Local (Sem Docker)
 
 - **Java JDK 17** ou superior
   ```bash
@@ -182,6 +320,12 @@ Este projeto é uma aplicação completa de e-commerce simplificada que demonstr
   # Saída esperada: psql (PostgreSQL) 16.x
   ```
 
+- **RabbitMQ 3.13+**
+  ```bash
+  rabbitmq-server --version
+  # Ou usar Docker: docker run -d -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+  ```
+
 - **Maven 3.8+** (ou usar o wrapper incluído)
   ```bash
   mvn --version
@@ -199,11 +343,37 @@ Este projeto é uma aplicação completa de e-commerce simplificada que demonstr
 ### 1️⃣ Clone o Repositório
 
 ```bash
-git clone <url-do-repositorio>
-cd Desafio2
+git clone https://github.com/ThallysCezar/Sistema-de-produtos-e-carrinho.git
+cd Sistema-de-produtos-e-carrinho
 ```
 
-### 2️⃣ Configurar o Banco de Dados
+### 2️⃣ Escolha seu Ambiente de Desenvolvimento
+
+#### 🐳 Opção A: Com Docker (Mais Rápido e Simples)
+
+```bash
+# 1. Configure as variáveis de ambiente (opcional, já tem valores padrão)
+cp .env.example .env
+
+# 2. Suba todos os serviços
+docker-compose up -d
+
+# 3. Aguarde os serviços iniciarem (cerca de 30 segundos)
+docker-compose logs -f
+
+# 4. Acesse a aplicação
+# Frontend: http://localhost
+# Backend: http://localhost:8081
+# RabbitMQ Management: http://localhost:15673 (guest/guest)
+```
+
+Pronto! Sua aplicação está rodando. Pule para a seção [Acessar a Aplicação](#-acessar-a-aplicação).
+
+---
+
+#### 💻 Opção B: Sem Docker (Configuração Manual)
+
+##### 1. Configurar o Banco de Dados
 
 ```bash
 # Acesse o PostgreSQL
@@ -220,20 +390,37 @@ GRANT ALL PRIVILEGES ON DATABASE desafio2 TO desafio_user;
 \q
 ```
 
-### 3️⃣ Configurar o Backend
+##### 2. Instalar e Configurar RabbitMQ
 
-Edite o arquivo `Backend/src/main/resources/application.properties`:
+```bash
+# Opção 1: Docker (mais fácil)
+docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 rabbitmq:3-management
+
+# Opção 2: Instalação local
+# Windows: https://www.rabbitmq.com/install-windows.html
+# Linux: sudo apt install rabbitmq-server
+# Mac: brew install rabbitmq
+```
+
+##### 3. Configurar o Backend
+
+Edite o arquivo `Backend/src/main/resources/application-dev.properties`:
 
 ```properties
-# Configuração do Banco de Dados
+# Banco de Dados Local
 spring.datasource.url=jdbc:postgresql://localhost:5432/desafio2
 spring.datasource.username=postgres
 spring.datasource.password=sua_senha
 
-# JPA/Hibernate
-spring.jpa.hibernate.ddl-auto=validate
+# RabbitMQ Local
+spring.rabbitmq.host=localhost
+spring.rabbitmq.port=5672
+spring.rabbitmq.username=guest
+spring.rabbitmq.password=guest
+
+# JPA/Hibernate (cria tabelas automaticamente em dev)
+spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
-spring.jpa.properties.hibernate.format_sql=true
 
 # Flyway
 spring.flyway.enabled=true
@@ -241,13 +428,9 @@ spring.flyway.baseline-on-migrate=true
 
 # Porta do servidor
 server.port=8080
-
-# Swagger
-springdoc.api-docs.path=/api-docs
-springdoc.swagger-ui.path=/swagger-ui.html
 ```
 
-### 4️⃣ Instalar Dependências do Backend
+##### 4. Instalar Dependências do Backend
 
 ```bash
 cd Backend
@@ -260,24 +443,46 @@ mvn clean install
 mvnw.cmd clean install      # Windows
 ```
 
-### 5️⃣ Instalar Dependências do Frontend
+##### 5. Instalar Dependências do Frontend
 
 ```bash
 cd ../Frontend
 npm install
 ```
 
+---
+
 ## ▶️ Executando o Projeto
 
-### Iniciar o Backend
+### 🐳 Com Docker
+
+```bash
+# Iniciar todos os serviços
+docker-compose up -d
+
+# Ver logs em tempo real
+docker-compose logs -f
+
+# Parar todos os serviços
+docker-compose down
+```
+
+### 💻 Sem Docker
+
+#### Iniciar o Backend
 
 ```bash
 cd Backend
 
+# Definir profile de desenvolvimento
+export SPRING_PROFILES_ACTIVE=dev  # Linux/Mac
+set SPRING_PROFILES_ACTIVE=dev     # Windows CMD
+$env:SPRING_PROFILES_ACTIVE="dev"  # Windows PowerShell
+
 # Opção 1: Maven instalado
 mvn spring-boot:run
 
-# Opção 2: Maven Wrapper
+# Opção 2: Maven Wrapper (recomendado)
 ./mvnw spring-boot:run        # Linux/Mac
 mvnw.cmd spring-boot:run      # Windows
 
@@ -288,7 +493,7 @@ java -jar target/backenddesafio2-0.0.1-SNAPSHOT.jar
 
 O backend estará rodando em: **http://localhost:8080**
 
-### Iniciar o Frontend
+#### Iniciar o Frontend
 
 ```bash
 cd Frontend
@@ -302,10 +507,26 @@ O frontend estará rodando em: **http://localhost:4200**
 
 ### 🎉 Acessar a Aplicação
 
+#### Local (Com Docker):
+- **Frontend**: http://localhost
+- **Backend API**: http://localhost:8081
+- **RabbitMQ Management**: http://localhost:15673 (guest/guest)
+- **Swagger UI**: http://localhost:8081/swagger-ui.html
+- **API Docs**: http://localhost:8081/api-docs
+
+#### Local (Sem Docker):
 - **Frontend**: http://localhost:4200
 - **Backend API**: http://localhost:8080
+- **RabbitMQ Management**: http://localhost:15672 (guest/guest)
 - **Swagger UI**: http://localhost:8080/swagger-ui.html
 - **API Docs**: http://localhost:8080/api-docs
+
+#### Produção (Render):
+- **Frontend**: https://sistema-de-produtos-e-carrinho-frontend.onrender.com
+- **Backend API**: https://sistema-de-produtos-e-carrinho.onrender.com
+- **Swagger UI**: https://sistema-de-produtos-e-carrinho.onrender.com/swagger-ui.html
+
+> ⚠️ **Lembre-se**: Aguarde 30-60 segundos no primeiro acesso à produção (wake up do Render)
 
 ## 📁 Estrutura do Projeto
 
@@ -335,18 +556,25 @@ Backend/
 │   │   │   │   └── ProductRepository.java
 │   │   │   ├── services/          # Lógica de negócio
 │   │   │   │   ├── OrderService.java
-│   │   │   │   └── ProductService.java
+│   │   │   │   ├── ProductService.java
+│   │   │   │   ├── OrderMessagePublisher.java   # Publica no RabbitMQ
+│   │   │   │   └── OrderMessageConsumer.java    # Consome do RabbitMQ
 │   │   │   └── BackEndChallengerTwoApplication.java
 │   │   └── resources/
-│   │       ├── application.properties
-│   │       └── db/migration/      # Scripts Flyway
+│   │       ├── application.properties           # Config base
+│   │       ├── application-dev.properties       # Config dev (local)
+│   │       ├── application-prod.properties      # Config prod (Render)
+│   │       └── db/migration/                    # Scripts Flyway
 │   │           ├── V1__scriptInicialized.sql
 │   │           ├── V2__scriptDropTables.sql
 │   │           ├── V3__scriptCreateTables.sql
 │   │           └── V4__scriptInsert_data.sql
-│   └── test/                      # Testes unitários
-├── pom.xml                        # Dependências Maven
-└── postman_collection.json        # Collection Postman
+│   └── test/                                    # Testes unitários
+├── Dockerfile                                   # Docker multi-stage build
+├── pom.xml                                      # Dependências Maven
+├── postman_collection.json                      # Collection Postman
+├── RENDER_DEPLOY.md                             # Guia de deploy backend
+└── TESTING_GUIDE.md                             # Guia de testes
 ```
 
 ### Frontend
@@ -380,9 +608,12 @@ Frontend/
 │   ├── index.html
 │   ├── main.ts
 │   └── styles.scss
+├── Dockerfile                          # Docker multi-stage build
+├── nginx.conf                          # Nginx config com proxy reverso
 ├── angular.json
 ├── package.json
-└── tsconfig.json
+├── tsconfig.json
+└── RENDER_FRONTEND_DEPLOY.md           # Guia de deploy frontend
 ```
 
 ## 🔌 API Endpoints
@@ -545,6 +776,11 @@ Use a collection do Postman incluída: `Backend/postman_collection.json`
 - 🧪 [API_TESTING_EXAMPLES.md](API_TESTING_EXAMPLES.md) - Exemplos de testes
 - 📝 [CHANGES_SUMMARY.md](CHANGES_SUMMARY.md) - Resumo de mudanças
 - 📖 [TESTING_GUIDE.md](Backend/TESTING_GUIDE.md) - Guia de testes backend
+- 🚀 [RENDER_DEPLOY.md](Backend/RENDER_DEPLOY.md) - Deploy do backend no Render
+- 🌐 [RENDER_FRONTEND_DEPLOY.md](Frontend/RENDER_FRONTEND_DEPLOY.md) - Deploy do frontend no Render
+- 📊 [APRESENTACAO_ROTEIRO.md](APRESENTACAO_ROTEIRO.md) - Roteiro de apresentação do projeto
+- 🐳 [docker-compose.yml](docker-compose.yml) - Configuração Docker Compose
+- 📋 [.env.example](.env.example) - Exemplo de variáveis de ambiente
 
 ## 🤝 Contribuindo
 
@@ -562,21 +798,48 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ## 👨‍💻 Autor
 
-**Thallys Projetos**
-- GitHub: [@thallysprojetos](https://github.com/thallysprojetos)
+**Thallys Cezar**
+- GitHub: [@ThallysCezar](https://github.com/ThallysCezar)
+- LinkedIn: [Thallys Cezar](https://www.linkedin.com/in/thallyscezar)
+- Repositório: [Sistema-de-produtos-e-carrinho](https://github.com/ThallysCezar/Sistema-de-produtos-e-carrinho)
 
 ## 🙏 Agradecimentos
 
-- Spring Boot community
-- Angular team
-- Material Design
-- PostgreSQL developers
-- Todos os contribuidores de código aberto
+- **Grupo Moura** - Pela oportunidade do desafio técnico
+- **Spring Boot Community** - Framework robusto e documentação excelente
+- **Angular Team** - Framework moderno e ferramentas incríveis
+- **RabbitMQ** - Mensageria confiável e escalável
+- **PostgreSQL** - Banco de dados poderoso e open-source
+- **Docker** - Containerização que simplifica deploy
+- **Render** - Plataforma de deploy moderna e gratuita
+- **CloudAMQP** - RabbitMQ gerenciado na nuvem
+- **Material Design** - UI components lindos e acessíveis
+- **Todos os contribuidores de código aberto** que tornam isso possível
 
 ---
 
-⭐ Se este projeto foi útil para você, considere dar uma estrela!
+## 🎯 Status do Projeto
 
-🐛 Encontrou um bug? [Abra uma issue](https://github.com/seu-usuario/desafio2/issues)
+✅ **Em Produção** - Aplicação rodando e acessível online
 
-💬 Tem alguma dúvida? Entre em contato!
+**Principais Features:**
+- ✅ CRUD completo de produtos
+- ✅ Carrinho de compras funcional
+- ✅ Checkout com processamento assíncrono
+- ✅ RabbitMQ para mensageria
+- ✅ Docker e Docker Compose
+- ✅ Deploy em produção (Render)
+- ✅ Documentação completa
+- ✅ Testes unitários
+- ⏳ CI/CD Pipeline (próximo passo)
+- ⏳ Autenticação JWT (próximo passo)
+
+---
+
+⭐ Se este projeto foi útil para você, considere dar uma estrela no GitHub!
+
+🐛 Encontrou um bug? [Abra uma issue](https://github.com/ThallysCezar/Sistema-de-produtos-e-carrinho/issues)
+
+💬 Tem alguma dúvida ou sugestão? Entre em contato!
+
+🚀 Quer contribuir? Pull requests são bem-vindos!
