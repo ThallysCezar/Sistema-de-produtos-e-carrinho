@@ -33,7 +33,8 @@ Um pequeno sistema de produtos com carrinho de compras e cálculo automático de
 - [Executando o Projeto](#-executando-o-projeto)
 - [Estrutura do Projeto](#-estrutura-do-projeto)
 - [API Endpoints](#-api-endpoints)
-- [Demonstração](#-demonstração)
+- [Como Funciona a Aplicação](#-como-funciona-a-aplicação)
+- [Documentação Swagger](#-documentação-swagger)
 - [Testes](#-testes)
 - [Contribuindo](#-contribuindo)
 
@@ -705,26 +706,190 @@ Frontend/
 - ✅ Quantidade no checkout: deve ser maior que zero
 - ✅ Estoque disponível: verificado antes de finalizar compra
 
-## 🎬 Demonstração
+## 🎬 Como Funciona a Aplicação
 
-### Tela Principal
-- Lista de produtos com paginação (5, 10 ou 20 itens por página)
-- Botões de ação: adicionar ao carrinho, editar, excluir
-- Detalhes expandíveis com informações completas do produto
-- Badge no carrinho mostrando quantidade de itens
+### 📸 Fluxo Completo da Aplicação
 
-### Carrinho de Compras
-- Painel lateral deslizante
-- Lista de itens com preço unitário e subtotal
-- Controles de quantidade (+/-)
-- Total geral calculado automaticamente
-- Botão de finalizar compra
+#### 1️⃣ Tela Inicial - Listagem de Produtos
 
-### Modais e Notificações
-- Modal para adicionar/editar produtos com validação
-- Notificação de sucesso (verde) com animação de check
-- Notificação de erro (vermelho) com animação de shake
-- Loading states durante operações assíncronas
+Ao acessar a aplicação, você é direcionado para a tela principal que exibe a listagem de todos os produtos disponíveis.
+
+![Tela de Listagem de Produtos](Assets\imagens\lista_produtos.jpeg)
+
+**Funcionalidades disponíveis:**
+- ✅ **Visualizar produtos** com nome, preço e estoque
+- ✅ **Paginação** para navegar entre produtos (5, 10 ou 20 itens por página)
+- ✅ **Adicionar novo produto** clicando no botão "+" no canto inferior direito
+- ✅ **Editar produto** clicando no ícone de lápis
+- ✅ **Excluir produto** clicando no ícone de lixeira
+- ✅ **Expandir detalhes** do produto clicando na seta para baixo
+
+---
+
+#### 2️⃣ Detalhes Expandidos do Produto
+
+Ao expandir um produto, você visualiza informações adicionais e pode adicioná-lo ao carrinho.
+
+![Detalhes do Produto Expandido](Assets\imagens\detalhes_produtos.jpeg)
+
+**O que você vê:**
+- 📦 **Estoque disponível** em tempo real
+- 💰 **Preço** detalhado
+- 📝 **Descrição completa** do produto (se disponível)
+
+---
+
+#### 3️⃣ CRUD de Produtos
+
+Botões interativo para criar um novo produto, editar e deletar um existente.
+
+![Botões de Adicionar Produto](Assets\imagens\crud_produtos.jpeg)
+
+**Campos do formulário:**
+- 📝 **Nome do produto** (obrigatório)
+- 💵 **Preço** (obrigatório, deve ser maior ou igual a zero)
+- 📦 **Estoque** (obrigatório, não pode ser negativo)
+
+**Validações:**
+- ⚠️ Campos obrigatórios destacados
+- ⚠️ Validação de valores numéricos
+- ✅ Feedback visual de sucesso/erro
+
+---
+
+#### 4️⃣ Carrinho de Compras Lateral
+
+Ao adicionar produtos, o carrinho é aberto automaticamente na lateral direita da tela.
+
+![Carrinho de Compras](Assets\imagens\carrinho_aberto_produtos.jpeg)
+
+**Funcionalidades do carrinho:**
+- 🛒 **Lista de produtos** adicionados com imagem, nome e preço
+- ➕➖ **Controles de quantidade** para ajustar unidades
+- 🗑️ **Botão de remover** produto do carrinho
+- 💰 **Cálculo automático** de subtotal por produto
+- 💵 **Total geral** atualizado em tempo real
+- 🔢 **Badge no ícone** mostrando quantidade total de itens
+- ✅ **Botão "Finalizar Compra"** para processar o pedido
+
+**Validações:**
+- ⚠️ Verifica estoque disponível antes de aumentar quantidade
+- ⚠️ Não permite quantidades negativas ou zero
+- ⚠️ Desabilita checkout se carrinho estiver vazio
+
+---
+
+#### 5️⃣ Finalização do Pedido (Checkout)
+
+Ao clicar em "Finalizar Compra", o sistema processa o pedido de forma assíncrona via RabbitMQ.
+
+![Notificação de Pedido Finalizado](Assets\imagens\checkout_sucesso_produtos.jpeg)
+
+**O que acontece:**
+1. ✅ **Validação de estoque** para todos os produtos
+2. ✅ **Criação do pedido** no banco de dados
+3. ✅ **Atualização automática** do estoque (redução)
+4. 🐰 **Publicação de mensagem** no RabbitMQ para processamento assíncrono
+5. 🔔 **Notificação de sucesso** exibida com o ID do pedido
+6. 🧹 **Limpeza automática** do carrinho após confirmação
+
+**Feedback visual:**
+- ✅ **Notificação verde** com mensagem "Pedido realizado com sucesso! ID: #123"
+- ⏱️ **Resposta imediata** ao usuário (não espera processamento completo)
+- 🔄 **Carrinho limpo** automaticamente
+
+---
+
+---
+
+### 🔄 Fluxo Assíncrono com RabbitMQ
+
+Quando você finaliza uma compra, o processo acontece em segundo plano:
+
+```
+Frontend → Backend (Checkout)
+    ↓
+Backend responde imediatamente (200 OK)
+    ↓
+RabbitMQ processa em segundo plano:
+    • Valida estoque detalhadamente
+    • Atualiza status do pedido
+    • Envia notificações (futuro)
+    • Gera relatórios (futuro)
+```
+
+**Vantagens:**
+- ⚡ **Performance**: Você não espera o processamento completo
+- 🔄 **Resiliência**: Se falhar, o sistema tenta novamente automaticamente
+- 📊 **Escalabilidade**: Múltiplos pedidos processados simultaneamente
+
+---
+
+## 📖 Documentação Swagger
+
+O projeto inclui **documentação interativa completa** da API usando **Swagger/OpenAPI**, permitindo que você:
+
+- 📋 **Visualize todos os endpoints** disponíveis
+- 🧪 **Teste a API** diretamente pelo navegador
+- 📝 **Veja exemplos** de requisições e respostas
+- 🔍 **Explore os schemas** dos modelos de dados
+
+### Acessando o Swagger UI
+
+**Produção:**
+🌐 [https://sistema-de-produtos-e-carrinho.onrender.com/swagger-ui.html](https://sistema-de-produtos-e-carrinho.onrender.com/swagger-ui.html)
+
+**Local:**
+- Com Docker: [http://localhost:8081/swagger-ui.html](http://localhost:8081/swagger-ui.html)
+- Sem Docker: [http://localhost:8080/swagger-ui.html](http://localhost:8080/swagger-ui.html)
+
+![Swagger UI](docs/images/08-swagger-ui.png)
+
+### Funcionalidades do Swagger
+
+1. **📋 Listagem de Endpoints**
+   - Todos os endpoints REST organizados por controllers
+   - Métodos HTTP (GET, POST, PUT, DELETE)
+   - Descrição de cada operação
+
+2. **🧪 Teste Interativo**
+   - Botão "Try it out" para executar requisições
+   - Formulários preenchidos com exemplos
+   - Visualização das respostas em tempo real
+
+3. **📝 Schemas e Modelos**
+   - Estrutura completa dos DTOs
+   - Tipos de dados e validações
+   - Exemplos de payloads
+
+4. **🔒 Autenticação** (futuro)
+   - Suporte para JWT tokens
+   - Configuração de headers personalizados
+
+### Endpoints Documentados
+
+**Products Controller:**
+- `GET /products` - Lista todos os produtos
+- `GET /products/{id}` - Busca produto por ID
+- `POST /products` - Cria novo produto
+- `PUT /products/{id}` - Atualiza produto
+- `DELETE /products/{id}` - Remove produto
+
+**Orders Controller:**
+- `POST /cart/checkout` - Finaliza compra
+- `GET /orders` - Lista todos os pedidos
+- `GET /orders/{id}` - Busca pedido por ID
+
+## 🎯 Principais Diferenciais da Aplicação
+
+1. **⚡ Performance**: Processamento assíncrono não bloqueia o usuário
+2. **🎨 UX Moderna**: Interface intuitiva com Material Design
+3. **🔄 Tempo Real**: Cálculos e validações instantâneas
+4. **📱 Responsivo**: Funciona perfeitamente em mobile
+5. **🐰 Mensageria**: RabbitMQ para escalabilidade
+6. **🐳 Containerizado**: Deploy simplificado com Docker
+7. **📖 Documentado**: Swagger completo para API
+8. **✅ Validado**: Validações em frontend e backend
 
 ## 🧪 Testes
 
@@ -771,11 +936,6 @@ Use a collection do Postman incluída: `Backend/postman_collection.json`
 
 ## 📚 Documentação Adicional
 
-- 📄 [QUICK_START.md](QUICK_START.md) - Guia de início rápido
-- 🔗 [INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md) - Guia de integração
-- 🧪 [API_TESTING_EXAMPLES.md](API_TESTING_EXAMPLES.md) - Exemplos de testes
-- 📝 [CHANGES_SUMMARY.md](CHANGES_SUMMARY.md) - Resumo de mudanças
-- 📖 [TESTING_GUIDE.md](Backend/TESTING_GUIDE.md) - Guia de testes backend
 - 🚀 [RENDER_DEPLOY.md](Backend/RENDER_DEPLOY.md) - Deploy do backend no Render
 - 🌐 [RENDER_FRONTEND_DEPLOY.md](Frontend/RENDER_FRONTEND_DEPLOY.md) - Deploy do frontend no Render
 - 📊 [APRESENTACAO_ROTEIRO.md](APRESENTACAO_ROTEIRO.md) - Roteiro de apresentação do projeto
